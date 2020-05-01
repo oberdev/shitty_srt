@@ -1,0 +1,35 @@
+from typing import Callable, List
+from functools import cmp_to_key
+
+Comparator = Callable[[int, int], bool]
+PQArray = List
+
+
+class PriorityQueue:
+    def __init__(self, comparator: Comparator):
+        self.comparator: Comparator = comparator
+        self.array: PQArray = []
+
+    def get(self, i: int):
+        return self.array[i]
+
+    def add(self, x: dict):
+        self.array.append(x)
+        print(f'До {self.array}')
+        self.array.sort(key=cmp_to_key(self.comparator))
+        print(f'После {self.array}')
+
+    def peek(self):
+        if self.length() == 0:
+            return None
+        else:
+            return self.array[0]
+
+    def shift(self):
+        if self.length() == 0:
+            return None
+        else:
+            return self.array.pop(0)
+
+    def length(self):
+        return len(self.array)
