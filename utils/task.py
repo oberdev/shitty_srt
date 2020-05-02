@@ -1,5 +1,6 @@
 from typing import List, Callable
 from utils.queue import PriorityQueue
+from numpy.random import exponential
 
 
 class Marker:
@@ -41,3 +42,16 @@ class PeriodicTask:
                 moment, False
             ))
             on_shift(self)
+
+
+class ApepiodicTask(PeriodicTask):
+
+    def __init__(self, id: int, period: int, exec_time: int):
+        PeriodicTask.__init__(self, id, period, exec_time)
+        self.appear_time: int = 0
+
+    def recalculate_apear_time(self):
+        self.appear_time += int(exponential(self.period)*1000)
+
+    def can_spawn(self, moment: int):
+        return moment == self.appear_time

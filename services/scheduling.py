@@ -54,6 +54,8 @@ class SchedullingService:
 
             if pq.peek() != None:
                 pq.peek().execute(moment, pq, lambda x: periodic_tasks_out.append(x))
+            else:
+                pass
 
         for task in self.periodic_tasks:
             task.count = 0
