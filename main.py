@@ -1,7 +1,7 @@
 from typing import List
 from utils.task import PeriodicTask
 from services.scheduling import SchedullingService
-from flask import Flask
+from flask import Flask, Markup
 from flask import render_template, jsonify
 import json
 
@@ -22,7 +22,7 @@ def edf():
     title, trace_data, error = SchedullingService(periodic_tasks, aperiodic_tasks).run('edf')
     with open('edf_out.json', 'w') as f:
         json.dump(trace_data, f)
-    return render_template("index.html", title=title, trace_data=trace_data)
+    return render_template("index.html", title=title, trace_data=Markup(trace_data))
 
 
 @app.route("/rm")
@@ -30,7 +30,8 @@ def rm():
     title, trace_data, error = SchedullingService(periodic_tasks, aperiodic_tasks).run('rm')
     with open('rm_out.json', 'w') as f:
         json.dump(trace_data, f)
-    return render_template("index.html", title=title, trace_data=trace_data)
+    return render_template("index.html", title=title, trace_data=Markup(trace_data))
+
 
 if __name__ == "__main__":
     app.run()

@@ -11,7 +11,7 @@
     anychart.format.outputDateTimeFormat("mm:ss.SS");
     anychart.onDocumentReady(() => {
         const title = "{{title}}";
-        const data = "{{trace_data}}"
+        const data = {{trace_data}}
 
         console.log('data', JSON.stringify(data))
         const treeData = anychart.data.tree(data, 'as-table');

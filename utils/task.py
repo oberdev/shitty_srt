@@ -5,7 +5,6 @@ from utils.queue import PriorityQueue
 class Marker:
     def __init__(self, time: int, is_start: bool):
         self.is_start: bool = is_start
-        self.time: int = time
 
 
 class PeriodicTask:
@@ -24,7 +23,7 @@ class PeriodicTask:
         return moment % self.period == 0
 
     def execute(self, moment, pq: PriorityQueue, on_shift: Callable):
-        if self.exec_moments == self.exec_time_remaining:
+        if self.exec_time == self.exec_time_remaining:
             self.markers.append(Marker(
                 moment, True
             ))
