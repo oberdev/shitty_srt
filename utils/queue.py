@@ -1,5 +1,7 @@
 from typing import Callable, List
 from functools import cmp_to_key
+from copy import deepcopy
+
 
 Comparator = Callable[[int, int], bool]
 PQArray = List
@@ -31,3 +33,9 @@ class PriorityQueue:
 
     def length(self):
         return len(self.array)
+
+    def spawn(self, task, moment: int):
+        task.count += 1
+        instance = deepcopy(task)
+        instance.response_time = -moment
+        self.add(instance)

@@ -19,6 +19,7 @@ class PeriodicTask:
         self.count: int = 0
         self.markers: List[Marker] = []
         self.name: str = f'Задача №{self.id} (p: {self.period}, e: {self.exec_time}'
+        self.response_time: int = None
 
     def can_spawn(self, moment: int):
         return moment % self.period == 0
@@ -35,6 +36,7 @@ class PeriodicTask:
 
         if self.exec_time_remaining == 0:
             pq.shift()
+            self.response_time += moment
             self.markers.append(Marker(
                 moment, False
             ))

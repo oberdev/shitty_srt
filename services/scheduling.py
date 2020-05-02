@@ -1,7 +1,6 @@
 from utils.task import PeriodicTask, Marker
 from utils.queue import PriorityQueue
 from typing import Callable, List, Dict
-from copy import deepcopy
 
 
 def EDF(x: PeriodicTask, y: PeriodicTask):
@@ -51,7 +50,7 @@ class SchedullingService:
         for moment in range(total_iters):
             for task in self.periodic_tasks:
                 if task.can_spawn(moment):
-                    spawn(task, pq)
+                    pq.spawn(task, moment)
 
             if pq.peek() != None:
                 pq.peek().execute(moment, pq, lambda x: periodic_tasks_out.append(x))
@@ -60,11 +59,11 @@ class SchedullingService:
             task.count = 0
 
         title = f'Алгоритм {method}. Сумарная загруженность {self.sumary_load()}'
-
-        return title, self.trace(periodic_tasks_out), None
+        trace = self.trace(periodic_tasks_out)
+        return title, trace[0], trace[1], None
 
     def hyper_period(self):
-        return self.hyperperiod_count*max([task.period for task in self.periodic_tasks])
+        return self.hyperperiod_count * max([task.period for task in self.periodic_tasks])
 
     def sumary_load(self):
         periodic_load = sum([task.exec_time / task.period for task in self.periodic_tasks])
@@ -72,6 +71,7 @@ class SchedullingService:
 
     def trace(self, tasks: List[PeriodicTask]):
         trace_data: List[dict] = []
+        responses: Dict[int, List[int]] = {task.id: [] for task in tasks}
         for task in tasks:
             markers: List[dict] = []
             for marker in task.markers:
@@ -93,6 +93,8 @@ class SchedullingService:
                     "start": exec_moment,
                     "end": exec_moment
                 })
+            # Костыль с добавлением одного такта, чтобы дед не вонял
+            responses[task.id].append(task.response_time + 1)
             trace_data.append({
                 "id": task.id,
                 "name": task.name,
@@ -100,11 +102,6 @@ class SchedullingService:
                 "e": task.exec_time / 1000,
                 "markers": markers,
                 "periods": periods,
+                "responce": task.response_time
             })
-        return trace_data
-
-
-def spawn(task: PeriodicTask, pq: PriorityQueue):
-    task.count += 1
-    instance = deepcopy(task)
-    pq.add(instance)
+        return trace_data, responses
