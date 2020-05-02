@@ -15,9 +15,7 @@ class PriorityQueue:
 
     def add(self, x: dict):
         self.array.append(x)
-        print(f'До {self.array}')
         self.array.sort(key=cmp_to_key(self.comparator))
-        print(f'После {self.array}')
 
     def peek(self):
         if self.length() == 0:
