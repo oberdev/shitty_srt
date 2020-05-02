@@ -3,10 +3,31 @@ from utils.queue import PriorityQueue
 from typing import Callable, List, Dict
 from copy import deepcopy
 
-RM: Callable[[PeriodicTask, PeriodicTask], bool] = \
-    lambda x, y: x.exec_time_remaing > y.exec_time_remaing if x.id == y.id else x.period > y.period
-EDF: Callable[[PeriodicTask, PeriodicTask], bool] = \
-    lambda x, y: x.count * x.period > y.count * y.period
+
+def EDF(x: PeriodicTask, y: PeriodicTask):
+    if x.count * x.period > y.count * y.period:
+        return 1
+    elif x.count * x.period < y.count * y.period:
+        return -1
+    else:
+        return 0
+
+
+def RM(x: PeriodicTask, y: PeriodicTask):
+    if x.id == y.id:
+        if x.exec_time_remaining > y.exec_time_remaining:
+            return 1
+        elif x.exec_time_remaining < y.exec_time_remaining:
+            return -1
+        else:
+            return 0
+    else:
+        if x.period < y.period:
+            return 1
+        elif x.period > y.period:
+            return -1
+        else:
+            return 0
 
 
 class SchedullingService:
