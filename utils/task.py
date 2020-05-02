@@ -4,6 +4,7 @@ from utils.queue import PriorityQueue
 
 class Marker:
     def __init__(self, time: int, is_start: bool):
+        self.time: int = time
         self.is_start: bool = is_start
 
 

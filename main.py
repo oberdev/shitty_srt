@@ -1,25 +1,15 @@
-from typing import List
-from utils.task import PeriodicTask
 from services.scheduling import SchedullingService
 from flask import Flask, Markup
 from flask import render_template, jsonify
 import json
-
-aperiodic_tasks = []
-
-periodic_tasks: List[PeriodicTask] = [
-    PeriodicTask(1, 60000, 2750),
-    PeriodicTask(2, 30000, 7500),
-    PeriodicTask(3, 15000, 3000),
-    PeriodicTask(4, 20000, 5000)
-]
+from input import PERIODIC_TASKS, APERIODIC_TASKS, HYPERPERIODS_COUNT
 
 app = Flask(__name__)
 
 
 @app.route("/edf")
 def edf():
-    title, trace_data, error = SchedullingService(periodic_tasks, aperiodic_tasks).run('edf')
+    title, trace_data, error = SchedullingService(PERIODIC_TASKS, APERIODIC_TASKS, HYPERPERIODS_COUNT).run('edf')
     with open('edf_out.json', 'w') as f:
         json.dump(trace_data, f)
     return render_template("index.html", title=title, trace_data=Markup(trace_data))
@@ -27,7 +17,7 @@ def edf():
 
 @app.route("/rm")
 def rm():
-    title, trace_data, error = SchedullingService(periodic_tasks, aperiodic_tasks).run('rm')
+    title, trace_data, error = SchedullingService(PERIODIC_TASKS, APERIODIC_TASKS, HYPERPERIODS_COUNT).run('rm')
     with open('rm_out.json', 'w') as f:
         json.dump(trace_data, f)
     return render_template("index.html", title=title, trace_data=Markup(trace_data))

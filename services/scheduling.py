@@ -15,16 +15,16 @@ def EDF(x: PeriodicTask, y: PeriodicTask):
 
 def RM(x: PeriodicTask, y: PeriodicTask):
     if x.id == y.id:
-        if x.exec_time_remaining > y.exec_time_remaining:
+        if x.exec_time_remaining < y.exec_time_remaining:
             return 1
-        elif x.exec_time_remaining < y.exec_time_remaining:
+        elif x.exec_time_remaining > y.exec_time_remaining:
             return -1
         else:
             return 0
     else:
-        if x.period < y.period:
+        if x.period > y.period:
             return 1
-        elif x.period > y.period:
+        elif x.period < y.period:
             return -1
         else:
             return 0
@@ -32,9 +32,10 @@ def RM(x: PeriodicTask, y: PeriodicTask):
 
 class SchedullingService:
 
-    def __init__(self, periodic_tasks: List[PeriodicTask], aperiodic_tasks):
+    def __init__(self, periodic_tasks: List[PeriodicTask], aperiodic_tasks, hyperperiod_count: int):
         self.periodic_tasks: List[PeriodicTask] = periodic_tasks
         self.aperiodic_tasks: List = aperiodic_tasks
+        self.hyperperiod_count: int = hyperperiod_count
 
     def run(self, method: str):
         pq: PriorityQueue = None
@@ -63,7 +64,7 @@ class SchedullingService:
         return title, self.trace(periodic_tasks_out), None
 
     def hyper_period(self):
-        return max([task.period for task in self.periodic_tasks])
+        return self.hyperperiod_count*max([task.period for task in self.periodic_tasks])
 
     def sumary_load(self):
         periodic_load = sum([task.exec_time / task.period for task in self.periodic_tasks])
