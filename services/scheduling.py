@@ -115,5 +115,4 @@ class SchedullingService:
             temp_responses = [node["response_time"] for node in responses[key]]
             results[key]["max"] = max(temp_responses)
             results[key]["mean"] = sum(temp_responses) / len(temp_responses)
-        print(responses)
         return trace_data, responses, results
