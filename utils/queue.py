@@ -2,7 +2,6 @@ from typing import Callable, List
 from functools import cmp_to_key
 from copy import deepcopy
 
-
 Comparator = Callable[[int, int], bool]
 PQArray = List
 
@@ -37,5 +36,12 @@ class PriorityQueue:
     def spawn(self, task, moment: int):
         task.count += 1
         instance = deepcopy(task)
-        instance.response_time = -moment
+        instance.stats.came_moment = moment
         self.add(instance)
+
+
+class AperiodicQueue(PriorityQueue):
+
+    def spawn(self, task, moment: int):
+        PriorityQueue.spawn(self, task, moment)
+        task.recalculate_apear_time()

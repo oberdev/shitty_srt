@@ -1,5 +1,5 @@
-from utils.task import PeriodicTask, Marker
-from utils.queue import PriorityQueue
+from utils.task import PeriodicTask, AperiodicTask, Marker
+from utils.queue import PriorityQueue, AperiodicQueue
 from typing import Callable, List, Dict
 
 
@@ -29,11 +29,20 @@ def RM(x: PeriodicTask, y: PeriodicTask):
             return 0
 
 
+def APERIODIC_COMPARATOR(x: AperiodicTask, y: AperiodicTask):
+    if x.appear_time < y.appear_time:
+        return 1
+    elif x.appear_time > y.appear_time:
+        return -1
+    else:
+        return 0
+
+
 class SchedullingService:
 
     def __init__(self, periodic_tasks: List[PeriodicTask], aperiodic_tasks, hyperperiod_count: int):
         self.periodic_tasks: List[PeriodicTask] = periodic_tasks
-        self.aperiodic_tasks: List = aperiodic_tasks
+        self.aperiodic_tasks: List[AperiodicTask] = aperiodic_tasks
         self.hyperperiod_count: int = hyperperiod_count
 
     def run(self, method: str):
@@ -45,23 +54,34 @@ class SchedullingService:
         else:
             return None
 
-        periodic_tasks_out: List[PeriodicTask] = []
+        aq: AperiodicQueue = AperiodicQueue(lambda x, y: True)
+
+        tasks_out: List[PeriodicTask, AperiodicTask] = []
         total_iters = self.hyper_period()
         for moment in range(total_iters):
             for task in self.periodic_tasks:
                 if task.can_spawn(moment):
                     pq.spawn(task, moment)
+            for task in self.aperiodic_tasks:
+                if task.can_spawn(moment):
+                    aq.spawn(task, moment)
 
-            if pq.peek() != None:
-                pq.peek().execute(moment, pq, lambda x: periodic_tasks_out.append(x))
+            if pq.peek() is not None:
+                pq.peek().execute(moment, pq, lambda x: tasks_out.append(x))
             else:
-                pass
+                for nomintate_task in aq.array:
+                    if nomintate_task.can_execute(moment, self.periodic_tasks):
+                        nomintate_task.execute(moment, aq, lambda x: tasks_out.append(x))
+                        break
 
         for task in self.periodic_tasks:
             task.count = 0
 
+        for task in self.aperiodic_tasks:
+            print(task.appear_time)
+
         title = f'Алгоритм {method}. Сумарная загруженность {self.sumary_load()}'
-        trace = self.trace(periodic_tasks_out)
+        trace = self.trace(tasks_out)
         return title, trace[0], trace[1], None
 
     def hyper_period(self):
@@ -69,11 +89,12 @@ class SchedullingService:
 
     def sumary_load(self):
         periodic_load = sum([task.exec_time / task.period for task in self.periodic_tasks])
-        return periodic_load
+        aperiodic_load = sum([task.exec_time / task.period for task in self.aperiodic_tasks])
+        return periodic_load + aperiodic_load
 
     def trace(self, tasks: List[PeriodicTask]):
         trace_data: List[dict] = []
-        responses: Dict[int, List[int]] = {task.id: [] for task in tasks}
+        responses: Dict[int, List[Dict[str, int]]] = {task.id: [] for task in tasks}
         for task in tasks:
             markers: List[dict] = []
             for marker in task.markers:
@@ -96,7 +117,11 @@ class SchedullingService:
                     "end": exec_moment
                 })
             # Костыль с добавлением одного такта, чтобы дед не вонял
-            responses[task.id].append(task.response_time + 1)
+            responses[task.id].append({
+                "came_moment": task.stats.came_moment,
+                "execute_moment": task.stats.execute_moment,
+                "response_time": task.stats.response_time + 1
+            })
             trace_data.append({
                 "id": task.id,
                 "name": task.name,
@@ -104,6 +129,6 @@ class SchedullingService:
                 "e": task.exec_time / 1000,
                 "markers": markers,
                 "periods": periods,
-                "responce": task.response_time
             })
+        print(responses)
         return trace_data, responses
