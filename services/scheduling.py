@@ -1,12 +1,12 @@
 from utils.task import PeriodicTask, AperiodicTask, Marker
-from utils.queue import PriorityQueue, AperiodicQueue
+from utils.queue import PriorityQueue
 from typing import Callable, List, Dict
 
 
 def EDF(x: PeriodicTask, y: PeriodicTask):
-    if x.count * x.period > y.count * y.period:
+    if x.count * x.deadline > y.count * y.deadline:
         return 1
-    elif x.count * x.period < y.count * y.period:
+    elif x.count * x.deadline < y.count * y.deadline:
         return -1
     else:
         return 0
@@ -21,21 +21,12 @@ def RM(x: PeriodicTask, y: PeriodicTask):
         else:
             return 0
     else:
-        if x.period > y.period:
+        if x.deadline > y.deadline:
             return 1
-        elif x.period < y.period:
+        elif x.deadline < y.deadline:
             return -1
         else:
             return 0
-
-
-def APERIODIC_COMPARATOR(x: AperiodicTask, y: AperiodicTask):
-    if x.appear_time < y.appear_time:
-        return 1
-    elif x.appear_time > y.appear_time:
-        return -1
-    else:
-        return 0
 
 
 class SchedullingService:
@@ -54,42 +45,31 @@ class SchedullingService:
         else:
             return None
 
-        aq: AperiodicQueue = AperiodicQueue(lambda x, y: True)
+        title = f'Алгоритм {method}. Сумарная загруженность {self.sumary_load()}'
 
+        tasks: List[PeriodicTask, AperiodicTask] = self.periodic_tasks + self.aperiodic_tasks
         tasks_out: List[PeriodicTask, AperiodicTask] = []
         total_iters = self.hyper_period()
         for moment in range(total_iters):
-            for task in self.periodic_tasks:
+            for task in tasks:
                 if task.can_spawn(moment):
                     pq.spawn(task, moment)
-            for task in self.aperiodic_tasks:
-                if task.can_spawn(moment):
-                    aq.spawn(task, moment)
-
+                    task.recalculate_deadline()
             if pq.peek() is not None:
                 pq.peek().execute(moment, pq, lambda x: tasks_out.append(x))
-            else:
-                for nomintate_task in aq.array:
-                    if nomintate_task.can_execute(moment, self.periodic_tasks):
-                        nomintate_task.execute(moment, aq, lambda x: tasks_out.append(x))
-                        break
 
         for task in self.periodic_tasks:
             task.count = 0
 
-        for task in self.aperiodic_tasks:
-            print(task.appear_time)
-
-        title = f'Алгоритм {method}. Сумарная загруженность {self.sumary_load()}'
         trace = self.trace(tasks_out)
         return title, trace[0], trace[1], None
 
     def hyper_period(self):
-        return self.hyperperiod_count * max([task.period for task in self.periodic_tasks])
+        return self.hyperperiod_count * max([task.deadline for task in self.periodic_tasks])
 
     def sumary_load(self):
-        periodic_load = sum([task.exec_time / task.period for task in self.periodic_tasks])
-        aperiodic_load = sum([task.exec_time / task.period for task in self.aperiodic_tasks])
+        periodic_load = sum([task.exec_time / task.deadline for task in self.periodic_tasks])
+        aperiodic_load = sum([task.exec_time / task.deadline_param for task in self.aperiodic_tasks])
         return periodic_load + aperiodic_load
 
     def trace(self, tasks: List[PeriodicTask]):
@@ -125,10 +105,15 @@ class SchedullingService:
             trace_data.append({
                 "id": task.id,
                 "name": task.name,
-                "p": task.period / 1000,
+                "p": task.deadline / 1000,
                 "e": task.exec_time / 1000,
                 "markers": markers,
                 "periods": periods,
             })
+        results: Dict[int, List[Dict[str, int]]] = {task.id: {} for task in tasks}
+        for key in results:
+            temp_responses = [node["response_time"] for node in responses[key]]
+            results[key]["max"] = max(temp_responses)
+            results[key]["mean"] = sum(temp_responses) / len(temp_responses)
         print(responses)
-        return trace_data, responses
+        return trace_data, responses, results

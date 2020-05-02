@@ -38,10 +38,3 @@ class PriorityQueue:
         instance = deepcopy(task)
         instance.stats.came_moment = moment
         self.add(instance)
-
-
-class AperiodicQueue(PriorityQueue):
-
-    def spawn(self, task, moment: int):
-        PriorityQueue.spawn(self, task, moment)
-        task.recalculate_apear_time()

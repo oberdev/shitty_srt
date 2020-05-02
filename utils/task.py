@@ -1,6 +1,6 @@
 from typing import List, Callable, Dict
 from utils.queue import PriorityQueue
-from numpy.random import exponential
+from random import expovariate
 
 
 class TaskStats:
@@ -18,19 +18,19 @@ class Marker:
 
 class PeriodicTask:
 
-    def __init__(self, id: int, period: int, exec_time: int):
+    def __init__(self, id: int, deadline: int, exec_time: int):
         self.id: int = id
-        self.period: int = period
+        self.deadline: int = deadline
         self.exec_time: int = exec_time
         self.exec_time_remaining: int = exec_time
         self.exec_moments: List[int] = []
         self.count: int = 0
         self.markers: List[Marker] = []
-        self.name: str = f'Task {self.id} (p: {self.period}, e: {self.exec_time}'
+        self.name: str = f'Task {self.id} (p: {self.deadline}, e: {self.exec_time}'
         self.stats: TaskStats = TaskStats()
 
     def can_spawn(self, moment: int):
-        return moment % self.period == 0
+        return moment % self.deadline == 0
 
     def execute(self, moment, pq: PriorityQueue, on_shift: Callable):
         if self.exec_time == self.exec_time_remaining:
@@ -51,24 +51,19 @@ class PeriodicTask:
             ))
             on_shift(self)
 
+    def recalculate_deadline(self):
+        pass
+
 
 class AperiodicTask(PeriodicTask):
 
-    def __init__(self, id: int, period: int, exec_time: int):
-        PeriodicTask.__init__(self, id, period, exec_time)
-        self.appear_time: int = 0
-        self.recalculate_apear_time()
+    def __init__(self, id: int, deadline: int, exec_time: int):
+        PeriodicTask.__init__(self, id, deadline, exec_time)
+        self.deadline = 0
+        self.deadline_param = deadline
 
-    def recalculate_apear_time(self):
-        self.appear_time += int(exponential(self.period))
+    def recalculate_deadline(self):
+        self.deadline += int(expovariate(1 / self.deadline_param))
 
     def can_spawn(self, moment: int):
-        return moment == self.appear_time
-
-    def can_execute(self, moment, periodic_tasks: List[PeriodicTask]):
-        executing_interval = range(moment, moment + self.exec_time_remaining)
-        for periodic_task in periodic_tasks:
-            for executing_moment in executing_interval:
-                if periodic_task.can_spawn(executing_moment):
-                    return False
-        return True
+        return moment == self.deadline
