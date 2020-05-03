@@ -50,7 +50,7 @@ class SchedullingService:
         tasks: List[PeriodicTask, AperiodicTask] = self.periodic_tasks + self.aperiodic_tasks
         tasks_out: List[PeriodicTask, AperiodicTask] = []
         total_iters = self.hyper_period()
-        for moment in range(total_iters):
+        for moment in range(int(total_iters)):
             for task in tasks:
                 if task.can_spawn(moment):
                     pq.spawn(task, moment)
@@ -62,7 +62,7 @@ class SchedullingService:
             task.count = 0
 
         trace = self.trace(tasks_out)
-        return title, trace[0], trace[1], None
+        return title, trace[0], trace[1], trace[2], None
 
     def hyper_period(self):
         return self.hyperperiod_count * max([task.deadline for task in self.periodic_tasks])
