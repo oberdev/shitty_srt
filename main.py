@@ -33,8 +33,8 @@ def create_tables_trace(document_name, trace):
     document = Document()
     tasks_ids = [task.id for task in tasks]
     for key in tasks_ids:
-        task: PeriodicTask = filter(find_by_id(key), tasks)[0]
-        document.add_heading(f'Задача №{key} Период: {task.deadline_param if isinstance(task, AperiodicTask) else task.deadline} Время исполнения: {task.exec_time}', level=2)
+        task: PeriodicTask = list(filter(find_by_id(key), tasks))[0]
+        document.add_heading(f'{"Апериодическая" if isinstance(task, AperiodicTask) else "Периодическая"} задача №{key} Период: {int(task.deadline_param)/1000 if isinstance(task, AperiodicTask) else (task.deadline)/1000} Время исполнения: {(task.exec_time)/1000}', level=2)
         table = document.add_table(rows=1, cols=4)
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = 'Номер вызова'
