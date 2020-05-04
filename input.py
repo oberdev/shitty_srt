@@ -1,9 +1,8 @@
 from utils.task import PeriodicTask, AperiodicTask
 from typing import List
 import numpy as np
-np.random.seed(1)
 
-HYPERPERIODS_COUNT = 4
+HYPERPERIODS_COUNT = 1
 
 PERIODIC_TASKS: List[PeriodicTask] = [
     PeriodicTask(1, 60000, 2750),

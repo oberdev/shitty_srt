@@ -1,6 +1,6 @@
 from typing import List, Callable, Dict
 from utils.queue import PriorityQueue
-from random import expovariate
+from numpy.random import exponential
 
 
 class TaskStats:
@@ -63,7 +63,7 @@ class AperiodicTask(PeriodicTask):
         self.deadline_param = deadline
 
     def recalculate_deadline(self):
-        self.deadline += int(expovariate(1 / self.deadline_param))
+        self.deadline += int(exponential(self.deadline_param))
 
     def can_spawn(self, moment: int):
         return moment == self.deadline
