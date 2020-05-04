@@ -2,7 +2,7 @@ from utils.task import PeriodicTask, AperiodicTask
 from typing import List
 import numpy as np
 
-HYPERPERIODS_COUNT = 1
+HYPERPERIODS_COUNT = 4
 
 PERIODIC_TASKS: List[PeriodicTask] = [
     PeriodicTask(1, 60000, 2750),

@@ -108,9 +108,12 @@ def edf():
 @app.route("/rm")
 def rm():
     seed = 0
-    # seed = 6 task 1
-    # seed = 103 task 2
-    seed = 0
+    # seed = 4 # task 1
+    # seed = 27 # task 2
+    # seed = 0 # task 3
+    # seed = 4 # task 1 leha
+    # seed = 4  # task 2 leha
+    # seed = 149 # task 3 leha
     while True:
         np.random.seed(seed)
         try:
